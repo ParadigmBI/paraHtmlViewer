@@ -119,6 +119,7 @@ export class Visual implements IVisual {
     private interactivityService: IInteractivityService<BaseDataPoint>;
     private tooltipServiceWrapper: ITooltipServiceWrapper;
     private valueName;
+    private ivalueName;
     private categoryName;
     private sandBoxWidth;
     private sandBoxHeight;
@@ -478,12 +479,21 @@ export class Visual implements IVisual {
         let columns = dataViews[0].metadata.columns, sandboxWidth = $('#sandbox-host').width(), sandboxHeight = $('#sandbox-host').height(), templateName = [];
         if (Visual.firstFlag) Visual.firstFlag = false; if (this.sandBoxWidth > 1600) Visual.mobileFlag = true;
         if (Visual.mobileFlag) sandboxWidth = this.sandBoxWidth, sandboxHeight = this.sandBoxHeight;
-        let valueArr = [], categories = [];
+        let valueArr = [], categories = [], ivalueArr = [];
         this.setSelectedIdOptions(categorical, values, dataViews[0]);
         let innerValueCount = 0;
-        this.valueName = [], this.statusFlag = false;
+        this.valueName = [], this.statusFlag = false, this.ivalueName = [];
         for (let i = 0; i < values.length; i++) {
-            if (values[i].source.roles["value"]) {
+            if (values[i].source.roles["ivalue"]) {
+                let displayName = values[i].source.displayName.toString();
+                if (displayName.indexOf("First ") == 0) displayName = displayName.slice(6);
+                this.ivalueName.push(displayName);
+                let tmp = [];
+                for (let j = 0; j < values[i].values.length; j++) { 
+                    tmp.push(values[i].values[j]);
+                }
+                ivalueArr.push(tmp);
+            }else if (values[i].source.roles["value"]) {
                 let displayName = values[i].source.displayName.toString();
                 if (displayName.indexOf("First ") == 0) displayName = displayName.slice(6);
                 this.valueName.push(displayName);
@@ -503,7 +513,7 @@ export class Visual implements IVisual {
         }
         if (categorical.categories) categories = categorical.categories[0].values;
         else categories = templateName, valueArr = [valueArr];
-        that.drawHtml(sandboxWidth, sandboxHeight, valueArr, categories);
+        that.drawHtml(sandboxWidth, sandboxHeight, valueArr, ivalueArr, categories);
         that.setIdenityIntoDiv();
         that.setBehavior(that.divSelection);
         // that.getContextMenu(that.clipSelection, that.selectionManager);
@@ -516,14 +526,14 @@ export class Visual implements IVisual {
         that.events.renderingFinished(options);
     }
 
-    private drawHtml(sandboxWidth, sandboxHeight, valueArr, categories) {
+    private drawHtml(sandboxWidth, sandboxHeight, valueArr, ivalueArr, categories) {
         this.htmlDiv.selectAll("*").remove();
         let maxWidth;
         this.bigDiv.style('overflow', 'auto');
         this.htmlDiv.append("div").classed("backG", true).style("opacity", 0);
         this.bigDiv.style('width', sandboxWidth + "px").style('height', sandboxHeight + "px");
         // this.htmlDiv.style('width', "9999999px");
-        maxWidth = this.drawHtmlColumn(valueArr, categories, sandboxWidth);
+        maxWidth = this.drawHtmlColumn(valueArr, ivalueArr, categories, sandboxWidth);
         let htmlWidth = sandboxWidth;
         this.bigDiv.style('overflow', 'hidden auto');
         if (this.settings.widthType === 2) {
@@ -575,7 +585,7 @@ export class Visual implements IVisual {
         }
     }
 
-    private drawHtmlColumn(valueArr, categories, sandboxWidth) {
+    private drawHtmlColumn(valueArr, ivalueArr, categories, sandboxWidth) {
         let childWidth = this.settings.htmlWidth, maxWidth = 0;
         if (this.settings.widthType === 1) childWidth = Math.max(0, (sandboxWidth - Visual.scrollWidth) / valueArr.length - this.settings.margin * 2 - this.settings.padding * 2);
         for (let i = 0; i < categories.length; i++) {
@@ -590,15 +600,23 @@ export class Visual implements IVisual {
                 div.style("border", this.settings.borderSize + "px solid" + this.settings.borderColor);
             }
             let dom = new DOMParser().parseFromString(this.templateHTML, 'text/html');
-            let documentElement = dom.documentElement, body = dom.getElementsByTagName("body")[0], html, style = dom.getElementsByTagName("style")[0];
+            let documentElement = dom.documentElement, body = dom.getElementsByTagName("body")[0], html, head = dom.getElementsByTagName("head")[0], style = dom.getElementsByTagName("style")[0];
             if (body) html = body;
             else html = documentElement;
+            let script = body.getElementsByTagName("script");
             let img = html.getElementsByTagName("img");
             // for (let k = img.length - 1; k >= 0; k--) img[k].remove();
             this.replaceAlert(this.nativeSelector(html));
             this.replaceAlert(html.attributes);
-            div.node().append(style);
+            if (head) div.node().append(head);
+            if (style) div.node().append(style);
             div.node().append(html);
+            // if (script) {
+            //     let len = script.length;
+            //     for(let j = 0; j < len; j++) {
+            //         $(".visual-sandbox").append(script[0]);
+            //     }
+            // }
             
             // let childNodes = html.childNodes;
             // for (let k = 0; k < childNodes.length; k++){
@@ -610,11 +628,16 @@ export class Visual implements IVisual {
             for (let j = 0; j < valueArr.length; j++) {
                 this.setValue(this.valueName[j], valueArr[j][i]);
             }
+            for (let j = 0; j < ivalueArr.length; j++) {
+                d3.select("#" + this.ivalueName[j]).attr("src", ivalueArr[j][i]);
+            }
             this.setValue(this.categoryName, categories[i]);
             let btn = html.getElementsByTagName("button")[0], form = html.getElementsByTagName("form")[0];
-            btn.onclick = (e) => {
-                this.submitFunction(i, valueArr, categories, form);
-                e.preventDefault();
+            if (form) {
+                btn.onclick = (e) => {
+                    this.submitFunction(i, valueArr, categories, form);
+                    e.preventDefault();
+                }
             }
         }
         return maxWidth;
