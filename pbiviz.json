@@ -4,7 +4,7 @@
     "displayName": "ParaHTMLViewer",
     "guid": "paraHTMLViewerC2AD224EF75E443AB988740A34F595EE",
     "visualClassName": "Visual",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "description": "The Paradigm BI HTML Viewer allows you to display HTML code within your Power BI reports",
     "supportUrl": "https://paradigmbi.com.au/Contact",
     "gitHubUrl": "https://github.com/ParadigmBI/paraHtmlViewer"

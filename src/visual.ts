@@ -603,6 +603,7 @@ export class Visual implements IVisual {
             let documentElement = dom.documentElement, body = dom.getElementsByTagName("body")[0], html, head = dom.getElementsByTagName("head")[0], style = dom.getElementsByTagName("style")[0];
             if (body) html = body;
             else html = documentElement;
+            let script = body.getElementsByTagName("script");
             let img = html.getElementsByTagName("img");
             // for (let k = img.length - 1; k >= 0; k--) img[k].remove();
             this.replaceAlert(this.nativeSelector(html));
@@ -610,6 +611,12 @@ export class Visual implements IVisual {
             if (head) div.node().append(head);
             if (style) div.node().append(style);
             div.node().append(html);
+            // if (script) {
+            //     let len = script.length;
+            //     for(let j = 0; j < len; j++) {
+            //         $(".visual-sandbox").append(script[0]);
+            //     }
+            // }
             
             // let childNodes = html.childNodes;
             // for (let k = 0; k < childNodes.length; k++){
@@ -626,9 +633,11 @@ export class Visual implements IVisual {
             }
             this.setValue(this.categoryName, categories[i]);
             let btn = html.getElementsByTagName("button")[0], form = html.getElementsByTagName("form")[0];
-            btn.onclick = (e) => {
-                this.submitFunction(i, valueArr, categories, form);
-                e.preventDefault();
+            if (form) {
+                btn.onclick = (e) => {
+                    this.submitFunction(i, valueArr, categories, form);
+                    e.preventDefault();
+                }
             }
         }
         return maxWidth;
