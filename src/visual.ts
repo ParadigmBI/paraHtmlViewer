@@ -382,7 +382,8 @@ export class Visual implements IVisual {
             //         this.selectionIdOptions.push({
             //             category: formatterCategory.format(Visual.GETSTRING(categorical.categories[0].values[i])),
             //             identity: selectionId,
-            //             values: dataValue.source.displayName,
+            //             // values: dataValue.source.displayName,
+            //             values: (i+1).toString(),
             //             selected: false
             //         });
             //     }
@@ -394,9 +395,11 @@ export class Visual implements IVisual {
                 identity = this.host.createSelectionIdBuilder().withCategory(cat, i).createSelectionId();
                 this.selectionIdOptions.push({
                     identity: identity,
-                    selected: false
+                    selected: false,
+                    category: cat.values[i]
                 });
             }
+            // console.log(this.selectionIdOptions);
         } else {
             for (let i = 0; i < values.length; i++) {
                 identity = this.host.createSelectionIdBuilder().withMeasure(values[i].source.queryName).createSelectionId();
@@ -414,7 +417,7 @@ export class Visual implements IVisual {
         let that = this;
         clipSelection.on('click', (d) => {
             // Allow selection only if the visual is rendered in a view that supports interactivity (e.g. Report)
-            if (that.host.allowInteractions) {
+            if (that.host.hostCapabilities.allowInteractions) {
                 const isCrtlPressed: boolean = (<MouseEvent>d3.event).ctrlKey;
                 that.selectionManager
                     .select(d.identity, isCrtlPressed)
@@ -427,7 +430,7 @@ export class Visual implements IVisual {
         });
 
         clearCatcher.on('click', (d) => {
-            if (that.host.allowInteractions) {
+            if (that.host.hostCapabilities.allowInteractions) {
                 that.selectionManager
                     .clear()
                     .then(() => {
@@ -455,6 +458,7 @@ export class Visual implements IVisual {
             if (i < selectionIdOptions.length) labelData.push(selectionIdOptions[i]);
             else labelData.push({identity: null, category: "Total", index: -1, selected: false, depth: 0});
         });
+        // console.log(labelData);
         return labelData;
     }
 
@@ -462,8 +466,8 @@ export class Visual implements IVisual {
         let selectionIdOptions = this.selectionIdOptions;
         this.clipSelection = d3.selectAll(".childDiv").selectAll("*");
         this.divSelection = d3.selectAll(".childDiv");
-        this.clipSelection.data(this.getSelectionData(selectionIdOptions, this.clipSelection));
         this.divSelection.data(this.getSelectionData(selectionIdOptions, this.divSelection));
+        this.clipSelection.data(this.getSelectionData(selectionIdOptions, this.clipSelection));
     }
 
     public update(options: VisualUpdateOptions) {
@@ -515,14 +519,14 @@ export class Visual implements IVisual {
         else categories = templateName, valueArr = [valueArr];
         that.drawHtml(sandboxWidth, sandboxHeight, valueArr, ivalueArr, categories);
         that.setIdenityIntoDiv();
-        that.setBehavior(that.divSelection);
-        // that.getContextMenu(that.clipSelection, that.selectionManager);
+        // that.setBehavior(that.divSelection);
         that.getContextMenu(that.divSelection, that.selectionManager);
-        that.getContextMenu(d3.selectAll(".backG"), that.selectionManager);
-        // that.tooltipServiceWrapper.addTooltip(that.clipSelection, (tooltipEvent: TooltipEventArgs < SelectionIdOption > ) => that.getTooltipData(tooltipEvent)
-        //     , (tooltipEvent: TooltipEventArgs < SelectionIdOption > ) => tooltipEvent.data.identity);
+        // that.getContextMenu(d3.selectAll(".backG"), that.selectionManager);
         that.tooltipServiceWrapper.addTooltip(that.divSelection, (tooltipEvent: TooltipEventArgs < SelectionIdOption > ) => that.getTooltipData(tooltipEvent)
         , (tooltipEvent: TooltipEventArgs < SelectionIdOption > ) => tooltipEvent.data.identity);
+        // that.getContextMenu(that.clipSelection, that.selectionManager);
+        // that.tooltipServiceWrapper.addTooltip(that.clipSelection, (tooltipEvent: TooltipEventArgs < SelectionIdOption > ) => that.getTooltipData(tooltipEvent)
+        //     , (tooltipEvent: TooltipEventArgs < SelectionIdOption > ) => tooltipEvent.data.identity);
         that.events.renderingFinished(options);
     }
 
@@ -611,12 +615,21 @@ export class Visual implements IVisual {
             if (head) div.node().append(head);
             if (style) div.node().append(style);
             div.node().append(html);
+<<<<<<< Updated upstream
             // if (script) {
             //     let len = script.length;
             //     for(let j = 0; j < len; j++) {
             //         $(".visual-sandbox").append(script[0]);
             //     }
             // }
+=======
+            if (script) {
+                let len = script.length;
+                for(let j = 0; j < len; j++) {
+                    $(".visual-sandbox").append(script[0]);
+                }
+            }
+>>>>>>> Stashed changes
             
             // let childNodes = html.childNodes;
             // for (let k = 0; k < childNodes.length; k++){
