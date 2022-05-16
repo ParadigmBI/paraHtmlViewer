@@ -615,21 +615,12 @@ export class Visual implements IVisual {
             if (head) div.node().append(head);
             if (style) div.node().append(style);
             div.node().append(html);
-<<<<<<< Updated upstream
-            // if (script) {
-            //     let len = script.length;
-            //     for(let j = 0; j < len; j++) {
-            //         $(".visual-sandbox").append(script[0]);
-            //     }
-            // }
-=======
             if (script) {
                 let len = script.length;
                 for(let j = 0; j < len; j++) {
                     $(".visual-sandbox").append(script[0]);
                 }
             }
->>>>>>> Stashed changes
             
             // let childNodes = html.childNodes;
             // for (let k = 0; k < childNodes.length; k++){
